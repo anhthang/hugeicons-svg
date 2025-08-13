@@ -4,43 +4,38 @@ A utility script to **download all free Hugeicons "stroke-rounded" SVGs** and ke
 
 This script:
 
-- Parses the Hugeicons web font (`hgi-stroke-rounded.svg`) to extract **all available free icon names**.
-- Downloads each icon in **individual SVG format** from Hugeicons CDN.
-- Saves them locally for further processing (e.g., adding to Iconify collections).
-- Makes it easier to maintain and update free Hugeicons assets without manually browsing their site.
+- Extracts free `stroke-rounded` icon names from the Hugeicons web font.
+- Downloads each as an individual SVG from the CDN.
+- Saves them locally for use or conversion (e.g., Iconify sets).
+- Automatically picks up new icons from the live font file.
 
-## Features
+## Requirements & Usage
 
-- **Free icons only** → Covers the `stroke-rounded` style from Hugeicons free version.
-- **Automated fetching** → No need to manually check which icons are available.
-- **Iconify-ready** → Downloaded SVGs can be processed into Iconify JSON sets for web/app use.
-- **Version-independent** → Uses the live font file to detect icon list, so it works even if Hugeicons adds new icons.
+### Python
 
-## Requirements
-
-- Python 3.8+
-- `requests` library
-
-Install dependencies:
+- Requires Python 3.8+
+- Install dependencies and run:
 
 ```bash
 pip install requests
-```
-
-## Usage
-
-Run the script:
-
-```bash
 python download_free_hugeicons.py
 ```
 
-Icons will be saved into the `hugeicons_svgs/` folder.
+### uv (recommended)
+
+- No separate Python setup needed
+- Install and run in one go:
+
+```bash
+uv pip install requests
+uv run python download_free_hugeicons.py
+```
+
+Icons will be saved into the `svg/stroke-rounded/` folder.
 
 ## Updating
 
-Re-run the script to get the latest icons.  
-It will detect new glyphs from the font and download them automatically.
+Just re-run the script locally or trigger the GitHub Actions job.
 
 ## License
 

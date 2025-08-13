@@ -1,0 +1,34 @@
+name: Update Hugeicons SVGs
+
+on:
+  schedule:
+    - cron: "0 0 * * 0" # Every Sunday at 00:00 UTC
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  update-icons:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v5
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Run downloader
+        run: |
+          uv pip install requests
+          uv run python download_free_hugeicons.py
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add svg/stroke-rounded/ || true
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: update Hugeicons stroke-rounded set"
+            git push
+          else
+            echo "No changes to commit."
+          fi
