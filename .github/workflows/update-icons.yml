@@ -18,6 +18,7 @@ jobs:
 
       - name: Run downloader
         run: |
+          uv venv
           uv pip install requests
           uv run python download_free_hugeicons.py
 
