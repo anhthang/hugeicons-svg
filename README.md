@@ -40,4 +40,4 @@ Just re-run the script locally or trigger the GitHub Actions job.
 ## License
 
 - **Code:** MIT
-- **Icons:** © Hugeicons — follow their license terms.
+- **Icons:** © [Hugeicons](https://hugeicons.com) — follow their license terms.
