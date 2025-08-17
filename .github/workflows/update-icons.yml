@@ -5,6 +5,9 @@ on:
     - cron: "0 0 * * 0" # Every Sunday at 00:00 UTC
   workflow_dispatch: # Allow manual trigger
 
+permissions:
+  contents: write # 👈 enables push
+
 jobs:
   update-icons:
     runs-on: ubuntu-latest
@@ -12,6 +15,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v6

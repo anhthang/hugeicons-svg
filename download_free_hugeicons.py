@@ -9,8 +9,10 @@ SVG_URL_TEMPLATE = "https://cdn.hugeicons.com/icons/{name}-stroke-rounded.svg?v=
 # Dictionary for special cases
 GLYPH_OVERRIDES = {
     # "glyph-name-in-font": "actual-cdn-name"
+    # "apple-music": "",
     "arrange-by-numbers-nine-1": "arrange-by-numbers-9-1",
     "arrange-by-numbers-one-9": "arrange-by-numbers-1-9",
+    # "component-1": "",
     "first-bracket-circle": "1st-bracket-circle",
     "first-bracket-square": "1st-bracket-square",
     "first-bracket": "1st-bracket",
@@ -22,7 +24,7 @@ GLYPH_OVERRIDES = {
     "layout-two-column": "layout-2-column",
     "layout-two-row": "layout-2-row",
     "modern-tv-four-k": "modern-tv-4-k",
-    "mp-four-01": "mp4-01",
+    "mp-four-01": "mp-4-01",
     "mp-four-02": "mp-4-02",
     "mp-three-01": "mp3-01",
     "mp-three-02": "mp-3-02",
@@ -30,11 +32,13 @@ GLYPH_OVERRIDES = {
     "root-first-bracket": "root-1st-bracket",
     "root-second-bracket": "root-2nd-bracket",
     "root-third-bracket": "root-3rd-bracket",
+    # "scan-image": "",
     "second-bracket-circle": "2nd-bracket-circle",
     "second-bracket-square": "2nd-bracket-square",
     "second-bracket": "2nd-bracket",
     "seven-z-01": "7z-01",
     "seven-z-02": "7z-02",
+    # "ski-dice-faces-01": "",
     "sorting-nine-1": "sorting-9-1",
     "sorting-one-9": "sorting-1-9",
     "third-bracket-circle": "3rd-bracket-circle",
@@ -43,7 +47,7 @@ GLYPH_OVERRIDES = {
     "three-d-move": "3d-move",
     "three-d-rotate": "3d-rotate",
     "three-d-scale": "3d-scale",
-    "three-d-view": "3d-view",
+    "three-d-view": "3-d-view",
     "w-three-schools": "w-3-schools",
 }
 
