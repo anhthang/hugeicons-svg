@@ -2,11 +2,10 @@ import re
 import requests
 from pathlib import Path
 
-# URLs
 FONT_URL = "https://use.hugeicons.com/font/hgi-stroke-rounded.svg"
-SVG_URL_TEMPLATE = "https://cdn.hugeicons.com/icons/{name}-stroke-rounded.svg?v=2.0"
+CDN_URL = "https://cdn.hugeicons.com/icons/{name}-stroke-rounded.svg?v=2.0"
 
-# Dictionary for special cases
+# Mapping for glyphs that have different CDN names
 GLYPH_OVERRIDES = {
     # "glyph-name-in-font": "actual-cdn-name"
     # "apple-music": "",
@@ -38,7 +37,7 @@ GLYPH_OVERRIDES = {
     "second-bracket": "2nd-bracket",
     "seven-z-01": "7z-01",
     "seven-z-02": "7z-02",
-    # "ski-dice-faces-01": "",
+    "ski-dice-faces-01": "ski",
     "sorting-nine-1": "sorting-9-1",
     "sorting-one-9": "sorting-1-9",
     "third-bracket-circle": "3rd-bracket-circle",
@@ -51,33 +50,83 @@ GLYPH_OVERRIDES = {
     "w-three-schools": "w-3-schools",
 }
 
-# Output folder
+# Extra icons not in font but available in CDN
+EXTRA_GLYPHS = [
+    "add-invoice",
+    "add-money-circle",
+    "arrow-up-right-03",
+    "c",
+    "car-signal",
+    "circle-arrow-up-right-02",
+    "cursor-magic-selection-03",
+    "cursor-magic-selection-04",
+    "ds-3-tool",
+    "folder-move-in",
+    "folder-move-to",
+    "frisbee",
+    "fuel",
+    "insert-column-right",
+    "lifebuoy",
+    "restaurant",
+    "semi-truck",
+    "square-arrow-up-right-02",
+    "tanker-truck",
+    "taxi-02",
+    "tinder",
+    "tinder-square",
+    "trade-mark-circle",
+    "tropical-storm-tracks",
+    "webflow-ellipse",
+    "webflow-rectangle",
+]
+
 OUTPUT_DIR = Path("svg/stroke-rounded")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-# 1. Download the font SVG
-print("Downloading font file...")
-font_svg = requests.get(FONT_URL)
-font_svg.raise_for_status()
+success_count = 0
+fail_count = 0
 
-# 2. Extract glyph names
-# The font SVG typically has: <glyph glyph-name="abacus" ...
-glyph_names = re.findall(r'glyph-name="([^"]+)"', font_svg.text)
+def fetch_font_svg():
+    print("Fetching font file...")
+    resp = requests.get(FONT_URL)
+    resp.raise_for_status()
+    return resp.text
 
-print(f"Found {len(glyph_names)} glyph names.")
+def parse_glyph_names(font_svg):
+    # The font SVG typically has: <glyph glyph-name="abacus" ...
+    return re.findall(r'glyph-name="([^"]+)"', font_svg)
 
-# 3. Download each icon
-for name in glyph_names:
-    # Use override if defined
-    cdn_name = GLYPH_OVERRIDES.get(name, name)
-    url = SVG_URL_TEMPLATE.format(name=cdn_name)
+def download_icon(name, cdn_name=None):
+    global success_count, fail_count
+    url_name = cdn_name or name
+    url = CDN_URL.format(name=url_name)
+    resp = requests.get(url)
 
-    try:
-        r = requests.get(url)
-        r.raise_for_status()
-        (OUTPUT_DIR / f"{cdn_name}.svg").write_bytes(r.content)
-        print(f"Downloaded: {cdn_name}")
-    except requests.HTTPError as e:
-        print(f"Failed: {name} ({e})")
+    if resp.status_code == 200:
+        path = OUTPUT_DIR / f"{url_name}.svg"
+        path.write_text(resp.text)
+        success_count += 1
+        print(f"✔ Downloaded: {name}.svg")
+    else:
+        fail_count += 1
+        print(f"✘ Failed: {name} ({url})")
 
-print("Done.")
+def main():
+    font_svg = fetch_font_svg()
+    glyph_names = parse_glyph_names(font_svg)
+    print(f"Found {len(glyph_names)} glyph names.")
+
+    for name in glyph_names:
+        cdn_name = GLYPH_OVERRIDES.get(name)
+        download_icon(name, cdn_name)
+
+    for name in EXTRA_GLYPHS:
+        download_icon(name)
+
+    print("\nDownload finished.")
+    print(f"✔ Success: {success_count}")
+    print(f"✘ Failed:  {fail_count}")
+    print(f"📦 Total icons saved: {success_count}")
+
+if __name__ == "__main__":
+    main()
