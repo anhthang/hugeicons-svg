@@ -50,19 +50,18 @@ GLYPH_OVERRIDES = {
     "w-three-schools": "w-3-schools",
 }
 
-# Extra icons not in font but available in CDN
+# Extra icons not in font but shown on website
 EXTRA_GLYPHS = [
+    "3d-printer",
     "add-invoice",
     "add-money-circle",
     "arrow-up-right-03",
-    "c",
     "car-signal",
     "circle-arrow-up-right-02",
+    "computer-terminal-01",
+    "computer-terminal-02",
     "cursor-magic-selection-03",
     "cursor-magic-selection-04",
-    "ds-3-tool",
-    "folder-move-in",
-    "folder-move-to",
     "frisbee",
     "fuel",
     "insert-column-right",
@@ -72,12 +71,18 @@ EXTRA_GLYPHS = [
     "square-arrow-up-right-02",
     "tanker-truck",
     "taxi-02",
-    "tinder",
     "tinder-square",
-    "trade-mark-circle",
-    "tropical-storm-tracks",
+    "tinder",
     "webflow-ellipse",
     "webflow-rectangle",
+]
+
+# Hidden icons: not in font, not on site, but downloadable via CDN
+HIDDEN_GLYPHS = [
+    "folder-move-in",
+    "folder-move-to",
+    "tinder-square",
+    "tinder",
 ]
 
 OUTPUT_DIR = Path("svg/stroke-rounded")
@@ -120,8 +125,12 @@ def main():
         cdn_name = GLYPH_OVERRIDES.get(name)
         download_icon(name, cdn_name)
 
-    for name in EXTRA_GLYPHS:
-        download_icon(name)
+    extras = EXTRA_GLYPHS + HIDDEN_GLYPHS
+    for name in extras:
+        if name in glyph_names:
+            print(f"⚠ Skipped duplicate (extra/hidden also in font): {name}")
+        else:
+            download_icon(name)
 
     print("\nDownload finished.")
     print(f"✔ Success: {success_count}")
