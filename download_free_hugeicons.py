@@ -11,7 +11,7 @@ GLYPH_OVERRIDES = {
     # "apple-music": "",
     "arrange-by-numbers-nine-1": "arrange-by-numbers-9-1",
     "arrange-by-numbers-one-9": "arrange-by-numbers-1-9",
-    # "component-1": "",
+    "component-1": "qwen",
     "first-bracket-circle": "1st-bracket-circle",
     "first-bracket-square": "1st-bracket-square",
     "first-bracket": "1st-bracket",
