@@ -1,0 +1,9 @@
+[project]
+name = "hugeicons"
+version = "0.1.0"
+description = "A utility script to download all free Hugeicons 'stroke-rounded' SVGs and keep them up-to-date for use in projects such as Iconify"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "requests>=2.32.5",
+]

@@ -25,7 +25,7 @@ jobs:
         run: |
           uv venv
           uv pip install requests
-          uv run python download_free_hugeicons.py
+          uv run python main.py
 
       - name: Commit and push changes
         run: |

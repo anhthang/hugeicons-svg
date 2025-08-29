@@ -18,7 +18,7 @@ This script:
 
 ```bash
 pip install requests
-python download_free_hugeicons.py
+python main.py
 ```
 
 ### uv (recommended)
@@ -28,7 +28,7 @@ python download_free_hugeicons.py
 
 ```bash
 uv pip install requests
-uv run python download_free_hugeicons.py
+uv run python main.py
 ```
 
 Icons will be saved into the `svg/stroke-rounded/` folder.

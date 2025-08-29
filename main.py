@@ -91,15 +91,18 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 success_count = 0
 fail_count = 0
 
+
 def fetch_font_svg():
     print("Fetching font file...")
     resp = requests.get(FONT_URL)
     resp.raise_for_status()
     return resp.text
 
+
 def parse_glyph_names(font_svg):
     # The font SVG typically has: <glyph glyph-name="abacus" ...
     return re.findall(r'glyph-name="([^"]+)"', font_svg)
+
 
 def download_icon(name, cdn_name=None):
     global success_count, fail_count
@@ -111,10 +114,11 @@ def download_icon(name, cdn_name=None):
         path = OUTPUT_DIR / f"{url_name}.svg"
         path.write_text(resp.text)
         success_count += 1
-        print(f"✔ Downloaded: {name}.svg")
+        # print(f"✔ Downloaded: {name}.svg")
     else:
         fail_count += 1
         print(f"✘ Failed: {name} ({url})")
+
 
 def main():
     font_svg = fetch_font_svg()
@@ -136,6 +140,7 @@ def main():
     print(f"✔ Success: {success_count}")
     print(f"✘ Failed:  {fail_count}")
     print(f"📦 Total icons saved: {success_count}")
+
 
 if __name__ == "__main__":
     main()
