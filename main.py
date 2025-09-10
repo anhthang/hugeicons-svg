@@ -106,6 +106,11 @@ def parse_glyph_names(font_svg):
 
 def download_icon(name, cdn_name=None):
     global success_count, fail_count
+
+    # Check if the name ends with a hyphen and remove it
+    if name.endswith("-"):
+        name = name[:-1]
+
     url_name = cdn_name or name
     url = CDN_URL.format(name=url_name)
     resp = requests.get(url)
