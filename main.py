@@ -85,6 +85,14 @@ HIDDEN_GLYPHS = [
     "tinder",
 ]
 
+# Glyphs where '-1' is a valid, intentional suffix
+VALID_MINUS_ONE_GLYPHS = {
+    "arrange-by-numbers-nine-1",
+    "component-1",
+    "sorting-nine-1",
+}
+
+
 OUTPUT_DIR = Path("svg/stroke-rounded")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -106,13 +114,10 @@ def parse_glyph_names(font_svg):
 
 def normalize_glyph_name(name: str) -> str:
     """
-    Remove only the trailing '-1' suffix added by font export.
-    Examples:
-      24-hours-clock-1 -> 24-hours-clock
-      package-01       -> package-01 (unchanged)
-      icon-2           -> icon-2 (unchanged)
+    Remove trailing '-1' ONLY if it is a font-generated duplicate.
+    Keep '-1' for known valid glyphs.
     """
-    if name.endswith("-1"):
+    if name.endswith("-1") and name not in VALID_MINUS_ONE_GLYPHS:
         return name[:-2]
     return name
 
