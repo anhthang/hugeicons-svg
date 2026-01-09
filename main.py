@@ -104,6 +104,19 @@ def parse_glyph_names(font_svg):
     return re.findall(r'glyph-name="([^"]+)"', font_svg)
 
 
+def normalize_glyph_name(name: str) -> str:
+    """
+    Remove only the trailing '-1' suffix added by font export.
+    Examples:
+      24-hours-clock-1 -> 24-hours-clock
+      package-01       -> package-01 (unchanged)
+      icon-2           -> icon-2 (unchanged)
+    """
+    if name.endswith("-1"):
+        return name[:-2]
+    return name
+
+
 def download_icon(name, cdn_name=None):
     global success_count, fail_count
 
@@ -127,7 +140,13 @@ def download_icon(name, cdn_name=None):
 
 def main():
     font_svg = fetch_font_svg()
-    glyph_names = parse_glyph_names(font_svg)
+
+    raw_glyph_names = parse_glyph_names(font_svg)
+    print(f"Found {len(raw_glyph_names)} raw glyph names.")
+
+    glyph_names = sorted({normalize_glyph_name(name) for name in raw_glyph_names})
+    print(f"After removing '-1' duplicates: {len(glyph_names)} unique glyph names.")
+
     print(f"Found {len(glyph_names)} glyph names.")
 
     for name in glyph_names:
