@@ -2,7 +2,7 @@ name: Update Hugeicons SVGs
 
 on:
   schedule:
-    - cron: "0 0 * * 0,3" # Runs at 00:00 UTC on Wednesdays and Sundays
+    - cron: "0 0 1,15 * *" # Runs at 00:00 UTC on the 1st and 15th of every month
   workflow_dispatch: # Allow manual trigger
 
 permissions:
