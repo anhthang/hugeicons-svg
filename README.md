@@ -5,7 +5,7 @@ A utility script to **download all free Hugeicons "stroke-rounded" SVGs** and ke
 This script:
 
 - Extracts free `stroke-rounded` icon names from the Hugeicons web font.
-- Downloads each as an individual SVG from the CDN.
+- Takes the current drawings from the official [`@hugeicons/core-free-icons`](https://www.npmjs.com/package/@hugeicons/core-free-icons) npm package (the CDN still serves the old ones), with the CDN as a fallback.
 - Saves them locally for use or conversion (e.g., Iconify sets).
 - Automatically picks up new icons from the live font file.
 
