@@ -11,10 +11,19 @@ GLYPH_OVERRIDES = {
     # "apple-music": "",
     "arrange-by-numbers-nine-1": "arrange-by-numbers-9-1",
     "arrange-by-numbers-one-9": "arrange-by-numbers-1-9",
+    "arrow-down-one-0": "arrow-down-1-0",
+    "arrow-down-zero-1": "arrow-down-0-1",
+    "arrow-up-one-0": "arrow-up-1-0",
+    "arrow-up-zero-1": "arrow-up-0-1",
+    "axis-three-d": "axis-3d",
+    "columns-three-cog": "columns-3-cog",
     "component-1": "qwen",
+    "file-axis-three-d": "file-axis-3d",
     "first-bracket-circle": "1st-bracket-circle",
     "first-bracket-square": "1st-bracket-square",
     "first-bracket": "1st-bracket",
+    "five-g-signal": "5-g-signal",
+    "four-g-signal": "4-g-signal",
     "four-k": "4k",
     "go-backward-five-sec": "go-backward-5-sec",
     "go-forward-five-sec": "go-forward-5-sec",
@@ -26,11 +35,15 @@ GLYPH_OVERRIDES = {
     "mp-four-01": "mp-4-01",
     "mp-four-02": "mp-4-02",
     "mp-three-01": "mp3-01",
+    "move-three-d": "move-3d",
     "mp-three-02": "mp-3-02",
+    "navigation-two-off": "navigation-2-off",
     "printer-three-d": "printer-3d",
     "root-first-bracket": "root-1st-bracket",
     "root-second-bracket": "root-2nd-bracket",
     "root-third-bracket": "root-3rd-bracket",
+    "rotate-three-d": "rotate-3d",
+    "scale-three-d": "scale-3d",
     # "scan-image": "",
     "second-bracket-circle": "2nd-bracket-circle",
     "second-bracket-square": "2nd-bracket-square",
@@ -47,6 +60,7 @@ GLYPH_OVERRIDES = {
     "three-d-rotate": "3d-rotate",
     "three-d-scale": "3d-scale",
     "three-d-view": "3-d-view",
+    "three-g-signal": "3-g-signal",
     "w-three-schools": "w-3-schools",
 }
 
@@ -85,11 +99,9 @@ HIDDEN_GLYPHS = [
     "tinder",
 ]
 
-# Glyphs where '-1' is a valid, intentional suffix
+# Glyphs where '-1' is intentional even though the name without it also exists
 VALID_MINUS_ONE_GLYPHS = {
-    "arrange-by-numbers-nine-1",
     "component-1",
-    "sorting-nine-1",
 }
 
 
@@ -112,12 +124,17 @@ def parse_glyph_names(font_svg):
     return re.findall(r'glyph-name="([^"]+)"', font_svg)
 
 
-def normalize_glyph_name(name: str) -> str:
+def normalize_glyph_name(name: str, all_names: set[str]) -> str:
     """
-    Remove trailing '-1' ONLY if it is a font-generated duplicate.
+    Remove trailing '-1' ONLY if it is a font-generated duplicate,
+    i.e. the name without it is also in the font.
     Keep '-1' for known valid glyphs.
     """
-    if name.endswith("-1") and name not in VALID_MINUS_ONE_GLYPHS:
+    if (
+        name.endswith("-1")
+        and name[:-2] in all_names
+        and name not in VALID_MINUS_ONE_GLYPHS
+    ):
         return name[:-2]
     return name
 
@@ -149,7 +166,10 @@ def main():
     raw_glyph_names = parse_glyph_names(font_svg)
     print(f"Found {len(raw_glyph_names)} raw glyph names.")
 
-    glyph_names = sorted({normalize_glyph_name(name) for name in raw_glyph_names})
+    all_names = set(raw_glyph_names)
+    glyph_names = sorted(
+        {normalize_glyph_name(name, all_names) for name in raw_glyph_names}
+    )
     print(f"After removing '-1' duplicates: {len(glyph_names)} unique glyph names.")
 
     print(f"Found {len(glyph_names)} glyph names.")
