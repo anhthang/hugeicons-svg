@@ -108,6 +108,16 @@ VALID_MINUS_ONE_GLYPHS = {
     "component-1",
 }
 
+# The npm package drops stroke-dasharray, so dashed icons come from the CDN
+CDN_ONLY_GLYPHS = {
+    "maping",
+    "message-circle-dashed",
+    "signal",
+    "squircle-dashed",
+    "status",
+    "transaction",
+}
+
 
 OUTPUT_DIR = Path("svg/stroke-rounded")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -138,14 +148,24 @@ def npm_key(name: str) -> str:
     return "-".join(DIGIT_WORDS[int(w)] if len(w) == 1 and w.isdigit() else w.lower() for w in words)
 
 
+# Attribute order used by the CDN files, so unchanged drawings produce no diff
+ATTR_ORDER = [
+    "cx", "x", "opacity", "fill-rule", "cy", "y", "clip-rule", "r", "width", "d", "height",
+    "fill", "rx", "ry", "transform", "stroke", "stroke-width", "stroke-miterlimit",
+    "stroke-linecap", "stroke-linejoin", "stroke-dasharray",
+]
+
+
 def element_to_svg(tag, attrs):
     parts = []
     for key, value in re.findall(r'(\w+): "([^"]*)"', attrs):
         if key == "key":
             continue
         key = re.sub(r"[A-Z]", lambda m: "-" + m.group(0).lower(), key)
-        parts.append(f'{key}="{value.replace("currentColor", "#141B34")}"')
-    return f"<{tag} {' '.join(parts)}/>"
+        parts.append((key, value.replace("currentColor", "#141B34")))
+    parts.sort(key=lambda p: ATTR_ORDER.index(p[0]) if p[0] in ATTR_ORDER else len(ATTR_ORDER))
+    attributes = " ".join(f'{key}="{value}"' for key, value in parts)
+    return f"<{tag} {attributes}/>"
 
 
 def fetch_npm_icons():
@@ -193,13 +213,15 @@ def download_icon(name, cdn_name=None):
     url_name = cdn_name or name
     path = OUTPUT_DIR / f"{url_name}.svg"
 
-    svg = npm_icons.get(npm_key(name)) or npm_icons.get(npm_key(url_name))
+    svg = None
+    if name not in CDN_ONLY_GLYPHS:
+        svg = npm_icons.get(npm_key(name)) or npm_icons.get(npm_key(url_name))
     if svg:
         path.write_text(svg)
         success_count += 1
         return
 
-    print(f"⚠ Not in npm package, using CDN: {name}")
+    print(f"⚠ Using CDN (not in npm package or dashed): {name}")
     url = CDN_URL.format(name=url_name)
     resp = requests.get(url)
 
