@@ -1,9 +1,13 @@
+import io
 import re
+import tarfile
 import requests
 from pathlib import Path
 
 FONT_URL = "https://use.hugeicons.com/font/hgi-stroke-rounded.svg"
 CDN_URL = "https://cdn.hugeicons.com/icons/{name}-stroke-rounded.svg?v=2.0"
+# The CDN still serves the old drawings, the npm package has the current (v4) ones
+NPM_URL = "https://registry.npmjs.org/@hugeicons/core-free-icons/latest"
 
 # Mapping for glyphs that have different CDN names
 GLYPH_OVERRIDES = {
@@ -104,12 +108,23 @@ VALID_MINUS_ONE_GLYPHS = {
     "component-1",
 }
 
+# The npm package drops stroke-dasharray, so dashed icons come from the CDN
+CDN_ONLY_GLYPHS = {
+    "maping",
+    "message-circle-dashed",
+    "signal",
+    "squircle-dashed",
+    "status",
+    "transaction",
+}
+
 
 OUTPUT_DIR = Path("svg/stroke-rounded")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 success_count = 0
 fail_count = 0
+npm_icons = {}
 
 
 def fetch_font_svg():
@@ -122,6 +137,55 @@ def fetch_font_svg():
 def parse_glyph_names(font_svg):
     # The font SVG typically has: <glyph glyph-name="abacus" ...
     return re.findall(r'glyph-name="([^"]+)"', font_svg)
+
+
+DIGIT_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
+
+
+def npm_key(name: str) -> str:
+    """Same key for npm names (ArrowDownOneZero, ThreeDPrinter) and font names (arrow-down-one-0, 3d-printer)."""
+    words = re.findall(r"[A-Z]?[a-z]+|[A-Z](?![a-z])|\d+", name.replace("24", "TwentyFour"))
+    return "-".join(DIGIT_WORDS[int(w)] if len(w) == 1 and w.isdigit() else w.lower() for w in words)
+
+
+# Attribute order used by the CDN files, so unchanged drawings produce no diff
+ATTR_ORDER = [
+    "cx", "x", "opacity", "fill-rule", "cy", "y", "clip-rule", "r", "width", "d", "height",
+    "fill", "rx", "ry", "transform", "stroke", "stroke-width", "stroke-miterlimit",
+    "stroke-linecap", "stroke-linejoin", "stroke-dasharray",
+]
+
+
+def element_to_svg(tag, attrs):
+    parts = []
+    for key, value in re.findall(r'(\w+): "([^"]*)"', attrs):
+        if key == "key":
+            continue
+        key = re.sub(r"[A-Z]", lambda m: "-" + m.group(0).lower(), key)
+        parts.append((key, value.replace("currentColor", "#141B34")))
+    parts.sort(key=lambda p: ATTR_ORDER.index(p[0]) if p[0] in ATTR_ORDER else len(ATTR_ORDER))
+    attributes = " ".join(f'{key}="{value}"' for key, value in parts)
+    return f"<{tag} {attributes}/>"
+
+
+def fetch_npm_icons():
+    meta = requests.get(NPM_URL).json()
+    print(f"Fetching @hugeicons/core-free-icons {meta['version']}...")
+    resp = requests.get(meta["dist"]["tarball"])
+    resp.raise_for_status()
+
+    with tarfile.open(fileobj=io.BytesIO(resp.content)) as tar:
+        index = tar.extractfile("package/dist/esm/index.js").read().decode()
+        # Only the icon's own name: some aliases point to a different icon (Foursquare -> FourSquare)
+        for file in re.findall(r"from '\./(\w+)Icon\.js';", index):
+            source = tar.extractfile(f"package/dist/esm/{file}Icon.js").read().decode()
+            elements = re.findall(r'\["(\w+)", \{ (.*?) \}\]', source)
+            svg = "\n".join(
+                ['<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">']
+                + [element_to_svg(tag, attrs) for tag, attrs in elements]
+                + ["</svg>\n"]
+            )
+            npm_icons[npm_key(file)] = svg
 
 
 def normalize_glyph_name(name: str, all_names: set[str]) -> str:
@@ -147,11 +211,21 @@ def download_icon(name, cdn_name=None):
         name = name[:-1]
 
     url_name = cdn_name or name
+    path = OUTPUT_DIR / f"{url_name}.svg"
+
+    svg = None
+    if name not in CDN_ONLY_GLYPHS:
+        svg = npm_icons.get(npm_key(name)) or npm_icons.get(npm_key(url_name))
+    if svg:
+        path.write_text(svg)
+        success_count += 1
+        return
+
+    print(f"⚠ Using CDN (not in npm package or dashed): {name}")
     url = CDN_URL.format(name=url_name)
     resp = requests.get(url)
 
     if resp.status_code == 200:
-        path = OUTPUT_DIR / f"{url_name}.svg"
         path.write_text(resp.text)
         success_count += 1
         # print(f"✔ Downloaded: {name}.svg")
@@ -161,6 +235,7 @@ def download_icon(name, cdn_name=None):
 
 
 def main():
+    fetch_npm_icons()
     font_svg = fetch_font_svg()
 
     raw_glyph_names = parse_glyph_names(font_svg)
